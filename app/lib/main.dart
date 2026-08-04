@@ -6,12 +6,14 @@ import 'localization/app_localizations.dart';
 import 'services/auth_service.dart';
 import 'screens/owner/add_machine.dart';
 import 'screens/farmer/browse_machines.dart';
-import 'screens/auth/login_screen.dart';
+import 'screens/auth/phone_entry.dart';
+import 'screens/auth/otp_verify.dart';
 import 'screens/auth/register_profile_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/owner/availability_calendar.dart';
 import 'screens/owner/booking_requests.dart';
 import 'screens/farmer/my_bookings.dart';
+import 'screens/shared/profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,9 +85,11 @@ class _GovipalaAppState extends State<GovipalaApp> {
       initialRoute: '/',
       routes: {
         '/': (context) => const RootScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const LoginScreen(),
+        '/login': (context) => const PhoneEntryScreen(),
+        '/register': (context) => const PhoneEntryScreen(),
+        '/login/otp': (context) => const OtpVerifyScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+        '/profile': (context) => const ProfileScreen(),
         '/owner/add_machine': (context) => const AddMachineScreen(),
         '/farmer/browse_machines': (context) => const BrowseMachinesScreen(),
         '/owner/availability_calendar': (context) => const AvailabilityCalendarScreen(),

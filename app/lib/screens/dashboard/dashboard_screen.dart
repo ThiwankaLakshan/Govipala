@@ -32,6 +32,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile');
+            },
+            tooltip: 'Profile',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
               authService.logout();
