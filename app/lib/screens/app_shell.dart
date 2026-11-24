@@ -1,14 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../services/offline_cache_service.dart';
+import '../services/auth_service.dart';
 import '../widgets/offline_banner.dart';
 import 'farmer/home_screen.dart';
 import 'owner/home_screen.dart';
 import 'admin/admin_panel_layout.dart';
-import 'auth/phone_entry_screen.dart';
+import 'auth/login_screen.dart';
 
-enum AppViewMode { farmer, owner, admin, auth }
+enum AppViewMode { auth, farmer, owner, admin }
 
 class AppShell extends StatefulWidget {
   final AppViewMode? initialMode;
@@ -21,12 +21,14 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   late AppViewMode _currentMode;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
-    // Default to admin panel on web for quick review, farmer view on mobile
-    _currentMode = widget.initialMode ?? (kIsWeb ? AppViewMode.admin : AppViewMode.farmer);
+    // Default to login page on first entrance as requested
+    _currentMode = widget.initialMode ?? AppViewMode.auth;
+    _authService.init();
   }
 
   @override
@@ -68,6 +70,12 @@ class _AppShellState extends State<AppShell> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    _buildModeButton(
+                      mode: AppViewMode.auth,
+                      label: '🔒 පිවිසුම (Login)',
+                      tooltip: 'මුල් පිවිසුම් පිටුව (Login & Account Creation)',
+                    ),
+                    const SizedBox(width: 3),
                     _buildModeButton(
                       mode: AppViewMode.admin,
                       label: '🛡️ පරිපාලක (Admin)',
@@ -134,16 +142,43 @@ class _AppShellState extends State<AppShell> {
 
   Widget _buildCurrentView() {
     switch (_currentMode) {
+      case AppViewMode.auth:
+        return LoginScreen(
+          authService: _authService,
+          onLoginSuccess: (roleKey) {
+            setState(() {
+              if (roleKey == 'admin') {
+                _currentMode = AppViewMode.admin;
+              } else if (roleKey == 'owner' || roleKey == 'machine_owner') {
+                _currentMode = AppViewMode.owner;
+              } else {
+                _currentMode = AppViewMode.farmer;
+              }
+            });
+          },
+        );
       case AppViewMode.farmer:
-        return const FarmerHomeScreen();
+        return FarmerHomeScreen(
+          onLogout: () async {
+            await _authService.logout();
+            setState(() => _currentMode = AppViewMode.auth);
+          },
+        );
       case AppViewMode.owner:
-        return const OwnerHomeScreen();
+        return OwnerHomeScreen(
+          onLogout: () async {
+            await _authService.logout();
+            setState(() => _currentMode = AppViewMode.auth);
+          },
+        );
       case AppViewMode.admin:
         return AdminPanelLayout(
           onSwitchToMobileApp: () => setState(() => _currentMode = AppViewMode.farmer),
+          onLogout: () async {
+            await _authService.logout();
+            setState(() => _currentMode = AppViewMode.auth);
+          },
         );
-      case AppViewMode.auth:
-        return const PhoneEntryScreen();
     }
   }
 

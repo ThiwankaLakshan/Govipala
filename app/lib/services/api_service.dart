@@ -87,6 +87,112 @@ class ApiService {
   }
 
   // ============================================
+  // AUTH & LOGIN API
+  // ============================================
+
+  /// Fetch demo credentials for all roles (GET /auth/demo-credentials)
+  static Future<Map<String, dynamic>> fetchDemoCredentials() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/demo-credentials'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+
+    // Fallback demo credentials
+    return {
+      'farmer': {
+        'phone': '077 555 1122',
+        'password': 'farmer123',
+        'name': 'අනුර කුමාර (Anura Kumara)',
+        'gn_division': 'Padaviya East',
+      },
+      'owner': {
+        'phone': '077 123 4567',
+        'password': 'owner123',
+        'name': 'සුනිල් පෙරේරා (Sunil Perera)',
+        'gn_division': 'Padaviya Town',
+      },
+      'admin': {
+        'email': 'admin@govipala.lk',
+        'password': 'admin123',
+        'name': 'පරිපාලක (Govipala Admin)',
+      },
+    };
+  }
+
+  /// Login with role, identifier (phone or email), and password (POST /auth/login)
+  static Future<Map<String, dynamic>> loginUser({
+    required String role,
+    required String identifier,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/login'),
+      headers: _headers(),
+      body: jsonEncode({
+        'role': role,
+        'identifier': identifier,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'] as String;
+      authToken = token;
+      final user = UserModel.fromJson(data['user']);
+      return {
+        'token': token,
+        'user': user,
+        'message': data['message'],
+      };
+    } else {
+      final err = jsonDecode(response.body);
+      throw Exception(err['message'] ?? 'Login failed. Please verify credentials.');
+    }
+  }
+
+  /// Direct register without SMS OTP requirement (POST /auth/register)
+  static Future<Map<String, dynamic>> directRegisterUser({
+    required String fullName,
+    required UserRole role,
+    required String phoneNumber,
+    required String gnDivision,
+    String? password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register'),
+      headers: _headers(),
+      body: jsonEncode({
+        'full_name': fullName,
+        'role': role.name,
+        'phone_number': phoneNumber,
+        'gn_division': gnDivision,
+        if (password != null) 'password': password,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'] as String;
+      authToken = token;
+      final user = UserModel.fromJson(data['user']);
+      return {
+        'token': token,
+        'user': user,
+        'message': data['message'],
+      };
+    } else {
+      final err = jsonDecode(response.body);
+      throw Exception(err['message'] ?? 'Registration failed.');
+    }
+  }
+
+  // ============================================
   // MACHINES API (Phase 2)
   // ============================================
 

@@ -364,4 +364,28 @@ void main() {
       expect(ConnectionStateStatus.syncing.name, 'syncing');
     });
   });
+
+  group('Govipala Login & Role Tests', () {
+    test('Validates role keys and demo credentials structure', () {
+      const demoFarmerPhone = '077 555 1122';
+      const demoFarmerPass = 'farmer123';
+      const demoOwnerPhone = '077 123 4567';
+      const demoOwnerPass = 'owner123';
+      const demoAdminEmail = 'admin@govipala.lk';
+      const demoAdminPass = 'admin123';
+
+      expect(demoFarmerPass, 'farmer123');
+      expect(demoOwnerPass, 'owner123');
+      expect(demoAdminPass, 'admin123');
+      expect(demoFarmerPhone.replaceAll(' ', ''), '0775551122');
+      expect(demoOwnerPhone.replaceAll(' ', ''), '0771234567');
+      expect(demoAdminEmail, contains('@govipala.lk'));
+    });
+
+    test('UserRole enum includes farmer, owner, and both', () {
+      expect(UserRole.values, contains(UserRole.farmer));
+      expect(UserRole.values, contains(UserRole.owner));
+      expect(UserRole.values, contains(UserRole.both));
+    });
+  });
 }

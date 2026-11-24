@@ -13,7 +13,9 @@ import '../notifications_screen.dart';
 
 /// Farmer Home Screen (06_UI_UX_GUIDE.md Section 4)
 class FarmerHomeScreen extends StatefulWidget {
-  const FarmerHomeScreen({super.key});
+  final VoidCallback? onLogout;
+
+  const FarmerHomeScreen({super.key, this.onLogout});
 
   @override
   State<FarmerHomeScreen> createState() => _FarmerHomeScreenState();
@@ -84,6 +86,12 @@ class _FarmerHomeScreenState extends State<FarmerHomeScreen> {
             icon: const Icon(Icons.search_rounded),
             onPressed: () => _openBrowse(),
           ),
+          if (widget.onLogout != null)
+            IconButton(
+              tooltip: 'ඉවත්වන්න (Logout)',
+              icon: const Icon(Icons.logout_rounded),
+              onPressed: widget.onLogout,
+            ),
           const SizedBox(width: GoviSpacing.xs),
         ],
       ),

@@ -8,6 +8,7 @@ import availabilityRoutes from './routes/availabilityRoutes';
 import bookingRoutes from './routes/bookingRoutes';
 import adminRoutes from './routes/adminRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import authRoutes from './routes/authRoutes';
 
 export const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/v1/availability', availabilityRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // Fallback 404 handler
 app.use((_req, res) => {

@@ -11,13 +11,15 @@ import '../farmer/home_screen.dart';
 import '../owner/home_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  final String phoneNumber;
+  final String? phoneNumber;
   final AuthService authService;
+  final Function(String mode)? onRegisterSuccess;
 
   const RegistrationScreen({
     super.key,
-    required this.phoneNumber,
+    this.phoneNumber,
     required this.authService,
+    this.onRegisterSuccess,
   });
 
   @override
@@ -26,6 +28,7 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _nameController = TextEditingController();
+  late final TextEditingController _phoneController;
   UserRole _selectedRole = UserRole.farmer;
   String? _selectedGnDivision;
   List<String> _gnDivisions = [];
@@ -35,7 +38,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   void initState() {
     super.initState();
+    _phoneController = TextEditingController(text: widget.phoneNumber ?? '');
     _loadGnDivisions();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadGnDivisions() async {
@@ -55,6 +66,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return;
     }
 
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      setState(() => _errorMessage = 'කරුණාකර දුරකථන අංකය ඇතුළත් කරන්න.');
+      return;
+    }
+
     if (_selectedGnDivision == null) {
       setState(() => _errorMessage = 'කරුණාකර ඔබගේ වසම (GN Division) තෝරන්න.');
       return;
@@ -66,24 +83,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      await widget.authService.register(
-        fullName: name,
-        role: _selectedRole,
-        gnDivision: _selectedGnDivision!,
-      );
+      if (widget.phoneNumber != null && widget.phoneNumber!.isNotEmpty) {
+        await widget.authService.register(
+          fullName: name,
+          role: _selectedRole,
+          gnDivision: _selectedGnDivision!,
+        );
+      } else {
+        await widget.authService.directRegister(
+          fullName: name,
+          role: _selectedRole,
+          phoneNumber: phone,
+          gnDivision: _selectedGnDivision!,
+        );
+      }
 
       if (!mounted) return;
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => _selectedRole == UserRole.owner
-              ? const OwnerHomeScreen()
-              : const FarmerHomeScreen(),
-        ),
-        (route) => false,
-      );
+      final mode = _selectedRole == UserRole.owner ? 'owner' : 'farmer';
+      if (widget.onRegisterSuccess != null) {
+        widget.onRegisterSuccess!(mode);
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => _selectedRole == UserRole.owner
+                ? const OwnerHomeScreen()
+                : const FarmerHomeScreen(),
+          ),
+          (route) => false,
+        );
+      }
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      setState(() => _errorMessage = e.toString().replaceAll('Exception:', '').trim());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -117,6 +148,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 decoration: const InputDecoration(
                   hintText: 'උදා: සුනිල් පෙරේරා',
                   prefixIcon: Icon(Icons.person_outline_rounded),
+                ),
+              ),
+              const SizedBox(height: GoviSpacing.lg),
+              const Text('දුරකථන අංකය (Phone Number):', style: GoviTextStyles.bodyBold),
+              const SizedBox(height: GoviSpacing.xs),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                style: GoviTextStyles.bodyBold,
+                decoration: InputDecoration(
+                  hintText: '077 123 4567',
+                  prefixIcon: const Icon(Icons.phone_android_rounded),
+                  enabled: widget.phoneNumber == null || widget.phoneNumber!.isEmpty,
                 ),
               ),
               const SizedBox(height: GoviSpacing.lg),

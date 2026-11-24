@@ -9,8 +9,13 @@ import 'admin_audit_log_screen.dart';
 
 class AdminPanelLayout extends StatefulWidget {
   final VoidCallback? onSwitchToMobileApp;
+  final VoidCallback? onLogout;
 
-  const AdminPanelLayout({super.key, this.onSwitchToMobileApp});
+  const AdminPanelLayout({
+    super.key,
+    this.onSwitchToMobileApp,
+    this.onLogout,
+  });
 
   @override
   State<AdminPanelLayout> createState() => _AdminPanelLayoutState();
@@ -74,6 +79,18 @@ class _AdminPanelLayoutState extends State<AdminPanelLayout> {
                   label: const Text('මොබයිල් දැක්ම (Mobile App)'),
                   onPressed: widget.onSwitchToMobileApp,
                 ),
+              if (widget.onLogout != null) ...[
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.red.withOpacity(0.3),
+                  ),
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: const Text('ඉවත්වන්න (Logout)'),
+                  onPressed: widget.onLogout,
+                ),
+              ],
               const SizedBox(width: GoviSpacing.md),
             ],
           ),

@@ -14,7 +14,9 @@ import 'booking_requests_screen.dart';
 import '../notifications_screen.dart';
 
 class OwnerHomeScreen extends StatefulWidget {
-  const OwnerHomeScreen({super.key});
+  final VoidCallback? onLogout;
+
+  const OwnerHomeScreen({super.key, this.onLogout});
 
   @override
   State<OwnerHomeScreen> createState() => _OwnerHomeScreenState();
@@ -156,6 +158,12 @@ class _OwnerHomeScreenState extends State<OwnerHomeScreen> {
               _loadMyMachines();
             },
           ),
+          if (widget.onLogout != null)
+            IconButton(
+              tooltip: 'ඉවත්වන්න (Logout)',
+              icon: const Icon(Icons.logout_rounded),
+              onPressed: widget.onLogout,
+            ),
           const SizedBox(width: GoviSpacing.xs),
         ],
       ),
